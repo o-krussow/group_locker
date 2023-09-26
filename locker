@@ -1,16 +1,20 @@
 #!/bin/bash
 
 
+GROUPFILE='/etc/login.group.allowed'
+PAMFILE='/etc/pam.d/common-auth'
+
+
 echo ""
 
-if ! [ -f /etc/login.group.allowed ]; then
-	echo "/etc/login.group.allowed does not exist. Exiting now"
+if ! [ -f $GROUPFILE ]; then
+	echo "$GROUPFILE does not exist. Exiting now"
 	exit 1
 fi
 
 if [ $1 = "enable" ]; then
-	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
-		sed -i '/auth required pam_listfile/s/^#//g' /etc/pam.d/common-auth
+	if grep -q "#auth required pam_listfile" $PAMFILE; then
+		sed -i '/auth required pam_listfile/s/^#//g' $PAMFILE
 		echo "Lock now enabled"
 	else
 		echo "Lock already enabled"
@@ -18,22 +22,22 @@ if [ $1 = "enable" ]; then
 	
 	echo ""
 	echo "Groups allowed on lock:"
-	cat /etc/login.group.allowed | grep -v root
+	cat $GROUPFILE | grep -v root
 
 elif [ $1 = "disable" ]; then
-	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
+	if grep -q "#auth required pam_listfile" $PAMFILE; then
 		echo "Lock already disabled"
 	else
-		sed -i '/auth required pam_listfile/s/^/#/g' /etc/pam.d/common-auth
+		sed -i '/auth required pam_listfile/s/^/#/g' $PAMFILE
 		echo "Lock now disabled"
 	fi
 
 	echo ""
 	echo "Groups allowed on lock:"
-	cat /etc/login.group.allowed | grep -v root
+	cat $GROUPFILE | grep -v root
 
 elif [ $1 = "status" ]; then
-	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
+	if grep -q "#auth required pam_listfile" $PAMFILE; then
 		echo "Lock disabled"
 	else
 		echo "Lock enabled"
@@ -42,19 +46,19 @@ elif [ $1 = "status" ]; then
 	
 	echo ""
 	echo "Groups allowed on lock:"
-	cat /etc/login.group.allowed | grep -v root
+	cat $GROUPFILE | grep -v root
 
 
 elif [ $1 = "add" ]; then
 	if [ -z "$2" ]; then
     		echo "Usage:" $(basename '$0') "add <group>"
 	else
-		echo "Adding group $2 to /etc/login.group.allowed"
-		echo $2 >> /etc/login.group.allowed
+		echo "Adding group $2 to $GROUPFILE"
+		echo $2 >> $GROUPFILE
 
 		echo ""
 		echo "Groups allowed on lock:"
-		cat /etc/login.group.allowed | grep -v root
+		cat $GROUPFILE | grep -v root
 	fi
 
 
@@ -62,13 +66,13 @@ elif [ $1 = "remove" ]; then
 	if [ -z "$2" ]; then
     		echo "Usage:" $(basename '$0') "delete <group>"
 	else
-		if grep -q "$2" /etc/login.group.allowed && [ $2 != "root" ]; then
-			echo "Deleting group $2 from /etc/login.group.allowed"
-			sed -i "/$2/d" /etc/login.group.allowed
+		if grep -q "$2" $GROUPFILE && [ $2 != "root" ]; then
+			echo "Deleting group $2 from $GROUPFILE"
+			sed -i "/$2/d" $GROUPFILE
 
 			echo ""
 			echo "Groups allowed on lock:"
-			cat /etc/login.group.allowed | grep -v root
+			cat $GROUPFILE | grep -v root
 		elif [ $2 == "root" ]; then
 			echo "Will not remove root from allowed users"
 		else
