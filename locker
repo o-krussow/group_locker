@@ -1,0 +1,86 @@
+#!/bin/bash
+
+
+echo ""
+
+if ! [ -f /etc/login.group.allowed ]; then
+	echo "/etc/login.group.allowed does not exist. Exiting now"
+	exit 1
+fi
+
+if [ $1 = "enable" ]; then
+	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
+		sed -i '/auth required pam_listfile/s/^#//g' /etc/pam.d/common-auth
+		echo "Lock now enabled"
+	else
+		echo "Lock already enabled"
+	fi
+	
+	echo ""
+	echo "Groups allowed on lock:"
+	cat /etc/login.group.allowed | grep -v root
+
+elif [ $1 = "disable" ]; then
+	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
+		echo "Lock already disabled"
+	else
+		sed -i '/auth required pam_listfile/s/^/#/g' /etc/pam.d/common-auth
+		echo "Lock now disabled"
+	fi
+
+	echo ""
+	echo "Groups allowed on lock:"
+	cat /etc/login.group.allowed | grep -v root
+
+elif [ $1 = "status" ]; then
+	if grep -q "#auth required pam_listfile" /etc/pam.d/common-auth; then
+		echo "Lock disabled"
+	else
+		echo "Lock enabled"
+		
+	fi
+	
+	echo ""
+	echo "Groups allowed on lock:"
+	cat /etc/login.group.allowed | grep -v root
+
+
+elif [ $1 = "add" ]; then
+	if [ -z "$2" ]; then
+    		echo "Usage:" $(basename '$0') "add <group>"
+	else
+		echo "Adding group $2 to /etc/login.group.allowed"
+		echo $2 >> /etc/login.group.allowed
+
+		echo ""
+		echo "Groups allowed on lock:"
+		cat /etc/login.group.allowed | grep -v root
+	fi
+
+
+elif [ $1 = "remove" ]; then
+	if [ -z "$2" ]; then
+    		echo "Usage:" $(basename '$0') "delete <group>"
+	else
+		if grep -q "$2" /etc/login.group.allowed && [ $2 != "root" ]; then
+			echo "Deleting group $2 from /etc/login.group.allowed"
+			sed -i "/$2/d" /etc/login.group.allowed
+
+			echo ""
+			echo "Groups allowed on lock:"
+			cat /etc/login.group.allowed | grep -v root
+		elif [ $2 == "root" ]; then
+			echo "Will not remove root from allowed users"
+		else
+			echo "Group does not exist in login.group.allowed"
+		fi
+	fi
+
+
+else
+	echo "Unrecognized option"
+
+fi
+
+echo ""
+
