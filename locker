@@ -4,6 +4,10 @@
 GROUPFILE='/etc/login.group.allowed'
 PAMFILE='/etc/pam.d/common-auth'
 
+if [ -z "$1" ]; then
+	echo "Usage:" $(basename "$0") "<enable> <disable> <add (group)> <remove (group)>"
+	exit
+fi
 
 echo ""
 
@@ -64,7 +68,7 @@ elif [ $1 = "add" ]; then
 
 elif [ $1 = "remove" ]; then
 	if [ -z "$2" ]; then
-    		echo "Usage:" $(basename '$0') "delete <group>"
+    		echo "Usage:" $(basename "$0") "delete <group>"
 	else
 		if grep -q "$2" $GROUPFILE && [ $2 != "root" ]; then
 			echo "Deleting group $2 from $GROUPFILE"
@@ -87,4 +91,5 @@ else
 fi
 
 echo ""
+
 
