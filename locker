@@ -5,7 +5,7 @@ GROUPFILE='/etc/login.group.allowed'
 PAMFILE='/etc/pam.d/common-auth'
 
 if [ -z "$1" ]; then
-	echo "Usage:" $(basename "$0") "<enable> <disable> <add (group)> <remove (group)>"
+	echo "Usage:" $(basename "$0") "<status> <enable> <disable> <add (group)> <remove (group)>"
 	exit
 fi
 
